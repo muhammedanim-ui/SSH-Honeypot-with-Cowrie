@@ -1,54 +1,46 @@
-# SSH-Honeypot-with-Cowrie
-# SSH Honeypot with Cowrie
+SSH Honeypot with Cowrie
 
-A medium-interaction SSH honeypot built with Cowrie and Docker, plus a Python
-log parser that classifies attacker behaviour.
+An SSH honeypot built with Cowrie and Docker. It emulates a Debian server, accepts any login, and records everything an attacker does.
 
-## Overview
-- Deploys Cowrie in a Docker container exposed on port 2222
-- Captures login attempts, commands and sessions as JSON logs
-- Python script parses logs and classifies commands (reconnaissance,
-  system info, network discovery, user enumeration, etc.)
-
-## Setup
-```bash
+What I Did
+Pulled the Cowrie image and ran it in a Docker container on port 2222
+Connected to the honeypot over SSH as root (any password is accepted)
+Ran typical attacker reconnaissance commands inside the fake server
+Checked the Cowrie logs to confirm the logins and commands were captured
+Setup
+bash
 docker pull cowrie/cowrie:latest
 docker run -d --name cowrie -p 2222:2222 cowrie/cowrie:latest
-```
 
-Connect to the honeypot:
-```bash
+Check that it's running:
+
+bash
+docker ps
+Connecting to the Honeypot
+bash
 ssh -p 2222 root@127.0.0.1
-```
 
-## Log Analysis
-Copy the logs out of the container volume, then run:
-```bash
-python3 parser/analyse_logs.py
+Commands I ran inside the session:
 
+whoami
+pwd
+ls
+uname -a
+ps
+ifconfig
+cat /etc/passwd
+history
+exit
 
-## Example Output
-Successful logins: 2
-Commands observed: 15
-Unique source IPs: 1
+Cowrie responds as a fake Debian server (svr04) with realistic output for each command.
 
-## Command Classification
-| Command | Category |
-|---|---|
-| whoami | Reconnaissance |
-| ls | File/Directory Discovery |
-| uname -a | System Information |
-| ps | Process Discovery |
-| ifconfig | Network Discovery |
-| cat /etc/passwd | User Enumeration |
-| history | Command History Discovery |
+Viewing the Logs
+bash
+docker logs --tail 100 cowrie
 
-#
+The logs show the connection, the SSH client fingerprint, the successful login, and every command entered.
 
-## What I Learned
-- Deploying containerised services with Docker
-- How honeypots emulate a real system to capture attacker behaviour
-- Parsing JSON logs and mapping commands to attacker techniques
-
-## Disclaimer
-Built for educational purposes in an isolated lab environment.
+What I Learned
+Running containerised services with Docker
+How honeypots emulate a real system to capture attacker behaviour
+Reading Cowrie logs to see logins, commands and session deta
